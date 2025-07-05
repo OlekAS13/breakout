@@ -23,6 +23,10 @@ debug = 0
 clickStartVisible = 1
 space = 0
 
+# ustawienia
+settingsOpen = False
+ballRotationMode = "Dynamic"
+leftWallGlitch = "On"
 
 # elementy gry
 bat = pygame.Rect(960, 1014, 45, 17) # rect bat
@@ -31,6 +35,7 @@ wallTop = pygame.Rect(585, 0, 750, 35) # rect wallTop
 wall = pygame.image.load("wall.png").convert() # image wallLeft i wallRight
 bar = pygame.Rect(585, 1014, 750, 17) # rect bar
 wallBottom = pygame.Rect(0, 1070, 1920, 10)
+wallLeft2 = pygame.Rect(558, 0, 15, 1080) # dodatkowa czarna lewa sciana za widoczna lewa sciana aby wystepowal Wall Glitch
 
 
 # ogolne info do cegiel
@@ -245,15 +250,35 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         
-        if pressedKeys[pygame.K_LCTRL]:
+        if pressedKeys[pygame.K_LCTRL]: # wychodzenie z gry
             running = False
         
-        if pressedKeys[pygame.K_d]:
+        if pressedKeys[pygame.K_d]: # przelaczanie debugu
             if debug == 0:
                 debug = 1
 
             elif debug == 1:
                 debug = 0
+        
+        if pressedKeys[pygame.K_s]: # otwieranie ustawien
+            settingsOpen = True
+        
+        if settingsOpen == True:
+            if pressedKeys[pygame.K_ESCAPE]: # zamykanie ustawien
+                settingsOpen = False
+            
+            if pressedKeys[pygame.K_b] and ballRotationMode == "Dynamic": # przelaczenie ballRotationMode na Static
+                ballRotationMode = "Static"
+            
+            elif pressedKeys[pygame.K_b] and ballRotationMode == "Static": # przelaczenie ballRotationMode na Dynamic
+                ballRotationMode = "Dynamic"
+            
+            elif pressedKeys[pygame.K_l] and leftWallGlitch == "On": # wylaczenie Left Wall Glitch
+                leftWallGlitch = "Off"
+            
+            elif pressedKeys[pygame.K_l] and leftWallGlitch == "Off": # wlaczenie Left Wall Glitch
+                leftWallGlitch = "On"
+        
 
         if event.type == pygame.MOUSEBUTTONDOWN and gameStarted == 0: # nacisniecie myszy spowoduje start
             bar.update(10000, 10000, 0, 0)
@@ -304,13 +329,23 @@ while running:
 
         screen.blit(clickStartText, [1600, 1000])
     
-    elif clickStartVisible == 0 and gameStarted == 0:
-        if clickStartVisible == 1 and gameStarted == 0:
-            freesansbold = pygame.font.Font("freesansbold.ttf", 30)
-        clickStartText = freesansbold.render("CLICK START", True, "black")
-
-        screen.blit(clickStartText, [1600, 1000])
-
+    # tekst ustawien
+    if gameStarted == 0 and settingsOpen == False:
+        settingsText = freesansbold.render("SETTINGS", True, "white")
+        
+        screen.blit(settingsText, [120, 1000])
+    
+    # tekst otwartych ustawien
+    if gameStarted == 0 and settingsOpen == True:
+        openSettingsText1 = freesansbold.render("Ball rotation: {}".format(ballRotationMode), True, "white")
+        openSettignsText2 = freesansbold.render("B to toggle", True, "white")
+        openSettingsText3 = freesansbold.render("Left wall glitch: {}".format(leftWallGlitch), True, "white")
+        openSettingsText4 = freesansbold.render("L to toggle", True, "white")
+        
+        screen.blit(openSettingsText1, [100, 940])
+        screen.blit(openSettignsText2, [100, 970])
+        screen.blit(openSettingsText3, [100, 1000])
+        screen.blit(openSettingsText4, [100, 1030])
 
 
 
@@ -363,6 +398,7 @@ while running:
     wallLeft = screen.blit(wall, [573, 0]) # rysowanie wall lewa
     wallRight = screen.blit(wall, [1333, 0]) # rysowanie wall prawa
     pygame.draw.rect(screen, "black", wallBottom) # rysowanie wallBottom
+    pygame.draw.rect(screen, "black", wallLeft2) # rysowanie dodatkowej lewej sciany
 
     if gameStarted == 0:
         pygame.draw.rect(screen, [0, 95, 155], bar) # rysowanie bar
@@ -383,9 +419,18 @@ while running:
         ballVelY *= -1
         canBreakBricks = True
 
-    # odbicie ball od scian
-    if ball.colliderect(wallLeft) or ball.colliderect(wallRight):
+    # odbicie ball od sciany prawej
+    if ball.colliderect(wallRight):
         ballVelX *= -1
+        
+    # odbicie ball od sciany lewej
+    if leftWallGlitch == "On":
+        if ball.colliderect(wallLeft2):
+            ballVelX *= -1
+    
+    elif leftWallGlitch == "Off":
+        if ball.colliderect(wallLeft):
+            ballVelX *= -1
     
     if canBreakBricks == True:
         # odbicie ball od czerwonej cegly
@@ -424,7 +469,7 @@ while running:
                     canBreakBricks = False
                     break
 
-        # ball wypada
+    # ball wypada
     if ball.colliderect(wallBottom):
         ballOut()
 
@@ -441,9 +486,18 @@ while running:
         if startBall.colliderect(wallTop):
             startBallVelY *= -1
 
-        # odbicie startowej ball od scian
-        if startBall.colliderect(wallLeft) or startBall.colliderect(wallRight):
+        # odbicie startowej ball od sciany prawej
+        if startBall.colliderect(wallRight):
             startBallVelX *= -1
+            
+        # odbicie startowej ball od sciany lewej
+        if leftWallGlitch == "On":
+            if startBall.colliderect(wallLeft2):
+                startBallVelX *= -1
+        
+        elif leftWallGlitch == "Off":
+            if startBall.colliderect(wallLeft):
+                startBallVelX *= -1
 
         # ruch startowej ball
         startBall = startBall.move(startBallVelX, startBallVelY)
@@ -459,7 +513,7 @@ while running:
 
 
     # odbicie ball od bat STATIC
-    """if ball.colliderect(bat):
+    if ball.colliderect(bat) and ballRotationMode == "Static":
         if checkOffset() > 0 and ballVelX < 0 and ballVelY > 0: # ball leci z prawej w dol, uderza bat od prawej strony
             ballVelX *= -1
             ballVelY *= -1
@@ -472,12 +526,14 @@ while running:
             ballVelY *= -1
 
         elif checkOffset() > 0 and ballVelX > 0 and ballVelY > 0: # ball leci z lewej w dol, udeza bat od prawej strony
-            ballVelY *= -1"""
+            ballVelY *= -1
+        
+        canBreakBricks = True
 
 
         
     # odbicie ball od bat DYNAMIC
-    if ball.colliderect(bat):
+    if ball.colliderect(bat) and ballRotationMode == "Dynamic":
         ballAngle = dynamicBallRotationAngle()
         ballAngleRad = math.radians(ballAngle)
 
