@@ -18,12 +18,12 @@ Breakout is a game in which you need to break all the bricks on the screen to wi
 * D - show / hide debug variables
 
 ## Settings
-* Ball rotation mode - choose which rotation mode you want to play with
-    * Dynamic - the closer the ball's center is to the center of the bat the straighter the angle will be.
-    * Static - if you hit the ball with the same half of the bat that the ball is coming from it will get reflected back by 180 degrees. If ball hits the other half it will get reflected by 90 degrees.
-* Left wall glitch - choose if you want to play with the left wall clippable like in the original Breakout or if you want to play with instant colissions instead
-    * On - the glitch is on and the ball will clip through the wall and reflect when it hits it left edge.
-    * Off - the glitch is off and the ball will reflect instantly when it touches the wall.
+* Ball rotation mode - choose which rotation mode you want to play with.
+    * Dynamic - the closer the ball's center is to the center of the bat the straighter the angle will be
+    * Static - if you hit the ball with the same half of the bat that the ball is coming from it will get reflected back by 180 degrees but if ball hits the other half it will get reflected by 90 degrees
+* Left wall glitch - choose if you want to play with the left wall clippable like in the original Breakout or if you want to play with instant colissions instead.
+    * On - the glitch is on and the ball will clip through the wall and reflect when it hits it left edge
+    * Off - the glitch is off and the ball will reflect instantly when it touches the wall
 
 ## Settings controls
 * B - toggles the Ball rotation mode setting
