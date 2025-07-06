@@ -5,9 +5,10 @@ import time
 
 pygame.init()
 
-START_GAME_EVENT = pygame.USEREVENT + 1
+THROW_BALL_EVENT = pygame.USEREVENT + 1
 TOGGLE_CLICKSTART = pygame.USEREVENT + 2
 BALL_OUT = pygame.USEREVENT + 3
+TOGGLE_POINTS = pygame.USEREVENT + 4
 
 screen = pygame.display.set_mode((1920, 1080), vsync = 1)
 clock = pygame.time.Clock()
@@ -18,10 +19,18 @@ pygame.display.set_caption("Breakout")
 pygame.display.toggle_fullscreen()
 
 gameStarted = 0
+gameEnded = 0
 drawBat = 0
 debug = 0
 clickStartVisible = 1
 space = 0
+firstScreenCleared = False
+infiniteLives = False
+pointsVisible = 1
+
+# statystyki
+points = 0
+lostBalls = 0
 
 # ustawienia
 settingsOpen = False
@@ -31,11 +40,13 @@ leftWallGlitch = "On"
 # elementy gry
 bat = pygame.Rect(960, 1014, 45, 17) # rect bat
 ball = pygame.Rect(960, 540, 13, 10) # rect ball
-wallTop = pygame.Rect(585, 0, 750, 35) # rect wallTop
-wall = pygame.image.load("wall.png").convert() # image wallLeft i wallRight
+wallTop = pygame.Rect(588, 0, 745, 35) # rect wallTop
+wall = pygame.image.load("wall.png").convert_alpha() # image wallLeft i wallRight
 bar = pygame.Rect(585, 1014, 750, 17) # rect bar
 wallBottom = pygame.Rect(0, 1070, 1920, 10)
 wallLeft2 = pygame.Rect(558, 0, 15, 1080) # dodatkowa czarna lewa sciana za widoczna lewa sciana aby wystepowal Wall Glitch
+shortBat = pygame.Rect(982, 1014, 25, 17) # rect shortBat
+endBar = pygame.Rect(585, 1014, 750, 17) # rect endBar (bar na ekran koncowy)
 
 
 # ogolne info do cegiel
@@ -68,17 +79,13 @@ ballSpeed = 4
 
 # zmienne bat
 totalBallHits = 0
+smallBat = False
 
 # cechy ball
-whichAngle = random.randint(0, 1)
 canBreakBricks = False
-isBallOut = False
+isBallOut = True
 
-if whichAngle == 0: # losowanie kata pilki
-    ballAngle = -120
-
-elif whichAngle == 1:
-    ballAngle = -60
+ballAngle = random.randint(-135, -45)
 
 ballAngleRad = math.radians(ballAngle)
 
@@ -124,28 +131,32 @@ def startGame():
     global gameStarted
 
     gameStarted = 1
+    
+    pygame.time.set_timer(TOGGLE_POINTS, 125)
 
-    throwBall()
 
 
 
 # wyrzucenie pilki
 def throwBall():
-    global ballSpeed, ballAngle, ballAngleRad, ballVelX, ballVelY, ball, isBallOut
+    global ballSpeed, ballAngle, ballAngleRad, ballVelX, ballVelY, ball, isBallOut, totalBallHits, speedMode
 
     isBallOut = False
+    
     ball = pygame.Rect(960, 540, 13, 10) # rect ball
+    
+    speedMode = "bat"
+    ballSpeed = 4
+    totalBallHits = 0
+    
 
-    if whichAngle == 0: # losowanie kata pilki
-        ballAngle = -120
+    ballAngle = random.randint(-135, -45)
 
-    elif whichAngle == 1:
-        ballAngle = -60
+    ballAngleRad = math.radians(ballAngle)
 
-        ballAngleRad = math.radians(ballAngle)
-
-        ballVelX = math.cos(ballAngleRad) * ballSpeed
-        ballVelY = -math.sin(ballAngleRad) * ballSpeed
+    ballVelX = math.cos(ballAngleRad) * ballSpeed
+    ballVelY = -math.sin(ballAngleRad) * ballSpeed
+        
 
 
 # generacja czerwonych cegiel
@@ -225,21 +236,43 @@ def generateYellowBricks():
 
 # piłka wyleciała
 def ballOut():
-    global isBallOut
+    global isBallOut, smallBat, lostBalls
     
     isBallOut = True
+    smallBat = False
+    
+    if infiniteLives == False:
+        lostBalls +=1
+        
+        ball.update(960, 540, 13, 10)
+    
 
-    throwBall()
+    
+def changeSpeed(newSpeed):
+    global ballSpeed, ballVelX, ballVelY, ballAngle, ballAngleRad
+    
+    ballSpeed = newSpeed
+    
+    ballVelX = math.cos(ballAngleRad) * ballSpeed
+    ballVelY = -math.sin(ballAngleRad) * ballSpeed
+    
+def sign(x):
+    return (x > 0) - (x < 0)
 
 
     
 pygame.time.set_timer(TOGGLE_CLICKSTART, 1000) # 1 sekundowy timer dla "CLICK START"
 
+# tworzenie cegiel i zalaczanie kazdej do listy
+def newListsOfBricks():
+    global redBricks, orangeBricks, greenBricks, yellowBricks
+    
+    redBricks = generateRedBricks()
+    orangeBricks = generateOrangeBricks()
+    greenBricks = generateGreenBricks()
+    yellowBricks = generateYellowBricks()
 
-redBricks = generateRedBricks()
-orangeBricks = generateOrangeBricks()
-greenBricks = generateGreenBricks()
-yellowBricks = generateYellowBricks()
+newListsOfBricks()
 
 
 while running:
@@ -278,26 +311,36 @@ while running:
             
             elif pressedKeys[pygame.K_l] and leftWallGlitch == "Off": # wlaczenie Left Wall Glitch
                 leftWallGlitch = "On"
+            
+            elif pressedKeys[pygame.K_i]:
+                infiniteLives = True
+        
+        if pressedKeys[pygame.K_g] and isBallOut == True and gameStarted == 1: # serwowanie ball
+            pygame.time.set_timer(THROW_BALL_EVENT, random.randint(1000, 3000), loops = 1)
         
 
         if event.type == pygame.MOUSEBUTTONDOWN and gameStarted == 0: # nacisniecie myszy spowoduje start
             bar.update(10000, 10000, 0, 0)
             startBall.update(10000, 10000, 0, 0)
             drawBat = 1
-            clickStartVisible == 0
+            clickStartVisible = 0
 
-            pygame.time.set_timer(START_GAME_EVENT, 1000, loops = 1) # ustawianie timera na 1 s aby wystartowac gre
+            startGame() # start gry
 
-        if event.type == START_GAME_EVENT and gameStarted == 0: # timer osiagnal 1 sekunde wiec gra startuje
-            startGame()
+        if event.type == THROW_BALL_EVENT: # timer osiagnal 1 sekunde wiec pilka jest serwowana
+            throwBall()
         
         if event.type == TOGGLE_CLICKSTART:
             clickStartVisible = not clickStartVisible
+        
+        if event.type == TOGGLE_POINTS:
+            pointsVisible = not pointsVisible
 
 
     # ruch bat
     mouse_x, _ = pygame.mouse.get_pos()
     bat.centerx = mouse_x
+    shortBat.centerx = mouse_x
 
 
 
@@ -341,12 +384,78 @@ while running:
         openSettignsText2 = freesansbold.render("B to toggle", True, "white")
         openSettingsText3 = freesansbold.render("Left wall glitch: {}".format(leftWallGlitch), True, "white")
         openSettingsText4 = freesansbold.render("L to toggle", True, "white")
+        openSettingsText5 = freesansbold.render("I for infinite lives", True, "white")
         
-        screen.blit(openSettingsText1, [100, 940])
-        screen.blit(openSettignsText2, [100, 970])
-        screen.blit(openSettingsText3, [100, 1000])
-        screen.blit(openSettingsText4, [100, 1030])
-
+        screen.blit(openSettingsText1, [100, 910])
+        screen.blit(openSettignsText2, [100, 940])
+        screen.blit(openSettingsText3, [100, 970])
+        screen.blit(openSettingsText4, [100, 1000])
+        screen.blit(openSettingsText5, [100, 1030])
+        
+        
+    # ---WYSWIETLANIE STATYSTYK---
+    atari = pygame.font.Font("atari.ttf", 60)
+    
+    # tekst gracza staky
+    playerText = atari.render("I", True, [204, 204, 204])
+    
+    # miejsce setne punktow
+    if points // 100 == 0:
+        pointsHundered = atari.render("O", True, [204, 204, 204])
+    
+    elif points // 100 == 1:
+        pointsHundered = atari.render("I", True, [204, 204, 204])
+    
+    elif points // 100 >= 2:
+        pointsHundered = atari.render("{}".format(points // 100), True, [204, 204, 204])
+    
+    # miejsce dziesiate punktow
+    if (points // 10) % 10 == 0:
+        pointsTen = atari.render("O", True, [204, 204, 204])
+        
+    elif (points // 10) % 10 == 1:
+        pointsTen = atari.render("I", True, [204, 204, 204])
+    
+    elif (points // 10) % 10 >= 2:
+        pointsTen = atari.render("{}".format((points // 10) % 10), True, [204, 204, 204])
+    
+    # miejsce jednosci punktow
+    if points % 10 == 0:
+        pointsOne = atari.render("O", True, [204, 204, 204])
+    
+    elif points % 10 == 1:
+        pointsOne = atari.render("I", True, [204, 204, 204])
+        
+    elif points % 10 >= 2:
+        pointsOne = atari.render("{}".format(points % 10), True, [204, 204, 204])
+        
+    
+    # tekst ilosci straconych pilek
+    if lostBalls == 0:
+        lostBallsText = atari.render("O", True, [204, 204, 204])
+        
+    elif lostBalls == 1:
+        lostBallsText = atari.render("I", True, [204, 204, 204])
+        
+    elif lostBalls >= 2:
+        lostBallsText = atari.render("{}".format(lostBalls), True, [204, 204, 204])
+    
+    # punkty drugiego gracza stale
+    secPointsHundered = atari.render("O", True, [204, 204, 204])
+    secPointsTen = atari.render("O", True, [204, 204, 204])
+    secPointsOne = atari.render("O", True, [204, 204, 204])
+    
+    
+    screen.blit(playerText, [590, 24])
+    
+    if pointsVisible == 1:
+        screen.blit(pointsHundered, [650, 85])
+        screen.blit(pointsTen, [710, 85])
+        screen.blit(pointsOne, [770, 85])
+    screen.blit(lostBallsText, [985, 24])
+    screen.blit(secPointsHundered, [1045, 85])
+    screen.blit(secPointsTen, [1105, 85])
+    screen.blit(secPointsOne, [1165, 85])
 
 
     # rysowanie startowej ball
@@ -372,7 +481,7 @@ while running:
 
 
     # rysowanie ball
-    if gameStarted == 1:
+    if gameStarted == 1 and isBallOut == False:
         if ball.bottom >= 1005 and ball.bottom < 1039: # ball niebieska
             pygame.draw.rect(screen, [0, 95, 160], ball) 
 
@@ -394,7 +503,7 @@ while running:
 
 
 
-    pygame.draw.rect(screen, "white", wallTop) # rysowanie wallTop
+    pygame.draw.rect(screen, [204, 204, 204], wallTop) # rysowanie wallTop
     wallLeft = screen.blit(wall, [573, 0]) # rysowanie wall lewa
     wallRight = screen.blit(wall, [1333, 0]) # rysowanie wall prawa
     pygame.draw.rect(screen, "black", wallBottom) # rysowanie wallBottom
@@ -402,22 +511,30 @@ while running:
 
     if gameStarted == 0:
         pygame.draw.rect(screen, [0, 95, 155], bar) # rysowanie bar
+    
+    if gameEnded == 1: # rysowanie bar na ekreanie koncowym
+        pygame.draw.rect(screen, [0, 95, 155], endBar) # rysowanie bar
 
-    if drawBat == 1:
+    if drawBat == 1 and smallBat == False and gameEnded == 0:
         pygame.draw.rect(screen, [0, 95, 155], bat) # rysowanie bat
+    
+    elif drawBat == 1 and smallBat == True and gameEnded == 0: # rysowanie shortBat
+        pygame.draw.rect(screen, [0, 95 , 155], shortBat)
+        
 
     
 
 
     # ---BALL---
     # ruch ball
-    if gameStarted == 1:
+    if gameStarted == 1 and isBallOut == False:
         ball = ball.move(ballVelX, ballVelY)
 
     # odbicie ball od wallTop
     if ball.colliderect(wallTop):
         ballVelY *= -1
         canBreakBricks = True
+        smallBat = True
 
     # odbicie ball od sciany prawej
     if ball.colliderect(wallRight):
@@ -435,28 +552,66 @@ while running:
     if canBreakBricks == True:
         # odbicie ball od czerwonej cegly
         for idx, redBrick in enumerate(redBricks):
+                prevBallVelX = ballVelX
+                prevBallVelY = ballVelY
+                
                 if ball.colliderect(redBrick):
-                    ballVelY *= -1
-                    del redBricks[idx]
+                    if speedMode == "bat": # zmiana predkosci tylko w wypadku gdy ta jeszcze nie zostala zmieniona
+                        changeSpeed(7)
+                    
+                    if sign(ballVelX) != sign(prevBallVelX): # ewentualne zamienienie znaku gdy cos niepoprawnie sie odbije (to jest bug i tylko tak udalo mi sie go wyeliminowac)
+                        ballVelX *= -1
+                    
+                    if sign(ballVelY) == sign(prevBallVelY): # taka sama zamiana z ballVelY (trzeba to robic poniewaz ballSpeed sie zmienia, to oznacza ze obliczane sa nove ballVel wiec trzeba je tak zamieniac
+                        ballVelY *= -1
+                    
+                    if gameEnded == 0:
+                        del redBricks[idx]
+                        
+                        points += 7
 
                     canBreakBricks = False
+                    speedMode = "brick"
+                    
                     break
         
         # odbicie ball od pomaranczowej cegly
         for idx, orangeBrick in enumerate(orangeBricks):
+                prevBallVelX = ballVelX
+                prevBallVelY = ballVelY
+                
+                
                 if ball.colliderect(orangeBrick):
-                    ballVelY *= -1
-                    del orangeBricks[idx]
+                    if speedMode == "bat": # zmiana predkosci tylko w wypadku gdy ta jeszcze nie zostala zmieniona
+                        changeSpeed(7)
+                        
+                    if sign(ballVelX) != sign(prevBallVelX): # ewentualne zamienienie znaku gdy cos niepoprawnie sie odbije (to jest bug i tylko tak udalo mi sie go wyeliminowac)
+                        ballVelX *= -1
+                        
+                    if sign(ballVelY) == sign(prevBallVelY): # taka sama zamiana z ballVelY (trzeba to robic poniewaz ballSpeed sie zmienia, to oznacza ze obliczane sa nove ballVel wiec trzeba je tak zamieniac
+                        ballVelY *= -1
 
+                    if gameEnded == 0:
+                        del orangeBricks[idx]
+                        
+                        points += 5
+                        
                     canBreakBricks = False
+                    speedMode = "brick"
+                    
+                    
                     break
 
         # odbicie ball od zielonej cegly
         for idx, greenBrick in enumerate(greenBricks):
                 if ball.colliderect(greenBrick):
                     ballVelY *= -1
-                    del greenBricks[idx]
+                    
+                    if gameEnded == 0:
+                        del greenBricks[idx]
 
+                        points += 3
+                        
                     canBreakBricks = False
                     break
         
@@ -464,11 +619,22 @@ while running:
         for idx, yellowBrick in enumerate(yellowBricks):
                 if ball.colliderect(yellowBrick):
                     ballVelY *= -1
-                    del yellowBricks[idx]
-
+                    
+                    if gameEnded == 0:
+                        del yellowBricks[idx]
+                    
+                        points += 1
+                        
                     canBreakBricks = False
                     break
-
+    
+    # odbicie ball od endBar (ekran koncowy)
+    if ball.colliderect(endBar) and gameEnded == 1:
+        ballVelX *= -1
+        ballVelY *= -1
+        
+        canBreakBricks = True
+    
     # ball wypada
     if ball.colliderect(wallBottom):
         ballOut()
@@ -529,6 +695,10 @@ while running:
             ballVelY *= -1
         
         canBreakBricks = True
+        
+        if not redBricks and not orangeBricks and not greenBricks and not yellowBricks and firstScreenCleared == False:
+            newListsOfBricks()
+            firstScreenCleared = True
 
 
         
@@ -542,35 +712,62 @@ while running:
 
         totalBallHits += 1
         
-        if totalBallHits == 3: # zmiana predkosci w zaleznosci od odbic o bat. Predkosc zmienia sie przy kolejnym odbiciu dlatego totalBallHits jest o 1 mniejsze
+        if totalBallHits == 3 and speedMode == "bat": # zmiana predkosci w zaleznosci od odbic o bat. Predkosc zmienia sie przy kolejnym odbiciu dlatego totalBallHits jest o 1 mniejsze
             ballSpeed = 5
 
-        elif totalBallHits == 11:
-            ballSpeed = 7
+        elif totalBallHits == 11 and speedMode == "bat":
+            ballSpeed = 6
 
         canBreakBricks = True
+        
+        # generacja drugiego ekranu cegiel
+        if not redBricks and not orangeBricks and not greenBricks and not yellowBricks and firstScreenCleared == False:
+            newListsOfBricks()
+            firstScreenCleared = True
+            
+    
+    # przegrana
+    if lostBalls == 6 and gameEnded == 0:
+        gameEnded = 1
+        pygame.time.set_timer(THROW_BALL_EVENT, random.randint(1000, 3000), loops = 1)
+    
+            
+    # ekran koncowy
+    if ball.colliderect(yellowBrick) or ball.colliderect(greenBrick) or ball.colliderect(orangeBrick) or ball.colliderect(redBrick) and gameStarted == 1:
+        if not redBricks and not orangeBricks and not greenBricks and not yellowBricks and firstScreenCleared == True:
+            drawBat = 0
+            gameEnded = 1
+        
+    
+    
     
     
     # wlaczanie albo wylaczanie debugu
     if debug == 1:
-        atari = pygame.font.Font("atari.ttf", 20)
-        text = atari.render("T: {}; S: {}; A: {}".format(totalBallHits, ballSpeed, ballAngle), True, "white")
-        text2 = atari.render("O: {}; X: {}; Y: {}".format(checkOffset(), int(ballVelX), int(ballVelY)), True, "white")
-        text3 = atari.render("BALL OUT: {}".format(isBallOut), True, "white")
+        text = freesansbold.render("T: {}; S: {}; A: {}".format(totalBallHits, ballSpeed, ballAngle), True, "white")
+        text2 = freesansbold.render("O: {}; X: {}; Y: {}".format(checkOffset(), int(ballVelX), int(ballVelY)), True, "white")
+        text3 = freesansbold.render("BALL OUT: {}".format(isBallOut), True, "white")
+        text4 = freesansbold.render("SPEED MODE: {}".format(speedMode), True, "white")
+        text5 = freesansbold.render("LOST BALLS: {}".format(lostBalls), True, "white")
 
         screen.blit(text, [0, 0])
         screen.blit(text2, [0, 25])
         screen.blit(text3, [0, 50])
+        screen.blit(text4, [0, 75])
+        screen.blit(text5, [0, 100])
         
     elif debug == 0:
-        atari = pygame.font.Font("atari.ttf", 20)
-        text = atari.render("T: {}; S: {}; A: {}".format(totalBallHits, ballSpeed, ballAngle), True, "black")
-        text2 = atari.render("O: {}; X: {}; Y: {}".format(checkOffset(), int(ballVelX), int(ballVelY)), True, "black")
-        text3 = atari.render("BALL OUT: {}".format(isBallOut), True, "black")
+        text = freesansbold.render("T: {}; S: {}; A: {}".format(totalBallHits, ballSpeed, ballAngle), True, "black")
+        text2 = freesansbold.render("O: {}; X: {}; Y: {}".format(checkOffset(), int(ballVelX), int(ballVelY)), True, "black")
+        text3 = freesansbold.render("BALL OUT: {}".format(isBallOut), True, "black")
+        text4 = freesansbold.render("SPEED MODE: {}".format(speedMode), True, "black")
+        text5 = freesansbold.render("LOST BALLS: {}".format(lostBalls), True, "black")
 
         screen.blit(text, [0, 0])
         screen.blit(text2, [0, 25])
         screen.blit(text3, [0, 50])
+        screen.blit(text4, [0, 75])
+        screen.blit(text5, [0, 100])
     
     """print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
     print("O: ", checkOffset())
