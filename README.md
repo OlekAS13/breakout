@@ -32,9 +32,8 @@ Breakout is a game in which you need to break all the bricks on the screen to wi
 * L - toggles the Left wall glitch setting
 * I - gives you infinite lives
 
-\n
-\n
-\n
-\n
+<br>
+<br>
+
 ---
 I hope that you will enjoy this game. The game was made in three days. Shoutout to my older Breakout on Scratch. Have Fun!
