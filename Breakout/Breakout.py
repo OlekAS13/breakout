@@ -24,6 +24,7 @@ gameEnded = 0
 drawBat = 0
 debug = 0
 clickStartVisible = 1
+freePlayVisible = 0
 space = 0
 firstScreenCleared = False
 infiniteLives = False
@@ -286,7 +287,7 @@ def sign(x):
 
 
     
-pygame.time.set_timer(TOGGLE_CLICKSTART, 1000) # 1 sekundowy timer dla "CLICK START"
+pygame.time.set_timer(TOGGLE_CLICKSTART, 2000) # 1 sekundowy timer dla "CLICK START"
 
 # tworzenie cegiel i zalaczanie kazdej do listy
 def newListsOfBricks():
@@ -349,6 +350,7 @@ while running:
             startBall.update(10000, 10000, 0, 0)
             drawBat = 1
             clickStartVisible = 0
+            freePlayVisible = 0
 
             startGame() # start gry
 
@@ -357,6 +359,7 @@ while running:
         
         if event.type == TOGGLE_CLICKSTART:
             clickStartVisible = not clickStartVisible
+            freePlayVisible = not freePlayVisible
         
         if event.type == TOGGLE_POINTS and gameStarted == 1:
             pointsVisible = not pointsVisible
@@ -393,11 +396,16 @@ while running:
 
 
 
-    # miganie tekstu "CLICK START"
+    # miganie tekstu "CLICK START" i "FREE PLAY"
     if clickStartVisible == 1 and gameStarted == 0:
         clickStartText = freesansbold.render("CLICK START", True, "white")
 
         screen.blit(clickStartText, [1600, 1000])
+    
+    if freePlayVisible == 1 and gameStarted == 0:
+        freePlayText = freesansbold.render("FREE PLAY", True, "white")
+
+        screen.blit(freePlayText, [1615, 1000])
     
     # tekst ustawien
     if gameStarted == 0 and settingsOpen == False:
@@ -578,7 +586,8 @@ while running:
         ballVelX *= -1
         
         if gameEnded == 0:
-            pygame.mixer.Sound.play(wallSound)
+            wallSound.stop()
+            wallSound.play()
         
     # odbicie ball od sciany lewej
     if leftWallGlitch == "On":
@@ -591,7 +600,11 @@ while running:
     
     # odpalanie dzwieku przy kolizji z wallLeft
     if ball.colliderect(wallLeft) and gameEnded == 0:
-        pygame.time.set_timer(SOUND_DELAY_WALL, 5, loops = 1)
+        wallSound.stop()
+        wallSound.play()
+        
+        
+        #pygame.time.set_timer(SOUND_DELAY_WALL, 5, loops = 1)
         
     
     if canBreakBricks == True:
@@ -602,7 +615,7 @@ while running:
                 
                 if ball.colliderect(redBrick):
                     if speedMode == "bat": # zmiana predkosci tylko w wypadku gdy ta jeszcze nie zostala zmieniona
-                        changeSpeed(7)
+                        changeSpeed(9)
                     
                     if sign(ballVelX) != sign(prevBallVelX): # ewentualne zamienienie znaku gdy cos niepoprawnie sie odbije (to jest bug i tylko tak udalo mi sie go wyeliminowac)
                         ballVelX *= -1
@@ -619,7 +632,8 @@ while running:
                     speedMode = "brick"
 
                     if gameEnded == 0:
-                        pygame.mixer.Sound.play(redBrickSound)
+                        redBrickSound.stop()
+                        redBrickSound.play()
                     
                     break
         
@@ -631,7 +645,7 @@ while running:
                 
                 if ball.colliderect(orangeBrick):
                     if speedMode == "bat": # zmiana predkosci tylko w wypadku gdy ta jeszcze nie zostala zmieniona
-                        changeSpeed(7)
+                        changeSpeed(9)
                         
                     if sign(ballVelX) != sign(prevBallVelX): # ewentualne zamienienie znaku gdy cos niepoprawnie sie odbije (to jest bug i tylko tak udalo mi sie go wyeliminowac)
                         ballVelX *= -1
@@ -648,7 +662,8 @@ while running:
                     speedMode = "brick"
 
                     if gameEnded == 0:
-                        pygame.mixer.Sound.play(orangeBrickSound)
+                        orangeBrickSound.stop()
+                        orangeBrickSound.play()
 
                     break
 
@@ -665,7 +680,8 @@ while running:
                     canBreakBricks = False
 
                     if gameEnded == 0:
-                        pygame.mixer.Sound.play(greenBrickSound)
+                        greenBrickSound.stop()
+                        greenBrickSound.play()
 
                     break
         
@@ -682,7 +698,8 @@ while running:
                     canBreakBricks = False
 
                     if gameEnded == 0:
-                        pygame.mixer.Sound.play(yellowBrickSound)
+                        yellowBrickSound.stop()
+                        yellowBrickSound.play()
 
                     break
     
@@ -759,7 +776,8 @@ while running:
             firstScreenCleared = True
         
         if gameEnded == 0:
-            pygame.mixer.Sound.play(batSound)
+            batSound.stop()
+            batSound.play()
 
 
     # odbicie ball od bat DYNAMIC
@@ -781,7 +799,8 @@ while running:
         canBreakBricks = True
 
         if gameEnded == 0:
-            pygame.mixer.Sound.play(batSound)
+            batSound.stop()
+            batSound.play()
 
         
         # generacja drugiego ekranu cegiel
@@ -812,29 +831,33 @@ while running:
     # wlaczanie albo wylaczanie debugu
     if debug == 1:
         text = freesansbold.render("T: {}; S: {}; A: {}".format(totalBallHits, ballSpeed, ballAngle), True, "white")
-        text2 = freesansbold.render("O: {}; X: {}; Y: {}".format(checkOffset(), int(ballVelX), int(ballVelY)), True, "white")
+        text2 = freesansbold.render("O: {}; X: {}; Y: {}".format(checkOffset(), round(ballVelX, 2), round(ballVelY, 2)), True, "white")
         text3 = freesansbold.render("BALL OUT: {}".format(isBallOut), True, "white")
         text4 = freesansbold.render("SPEED MODE: {}".format(speedMode), True, "white")
         text5 = freesansbold.render("LOST BALLS: {}".format(lostBalls), True, "white")
+        text6 = freesansbold.render("FPS: {}".format(round(pygame.time.Clock.get_fps(clock), 2)), True, "white")
 
         screen.blit(text, [0, 0])
         screen.blit(text2, [0, 25])
         screen.blit(text3, [0, 50])
         screen.blit(text4, [0, 75])
         screen.blit(text5, [0, 100])
+        screen.blit(text6, [0, 125])
         
     elif debug == 0:
         text = freesansbold.render("T: {}; S: {}; A: {}".format(totalBallHits, ballSpeed, ballAngle), True, "black")
-        text2 = freesansbold.render("O: {}; X: {}; Y: {}".format(checkOffset(), int(ballVelX), int(ballVelY)), True, "black")
+        text2 = freesansbold.render("O: {}; X: {}; Y: {}".format(checkOffset(), round(ballVelX, 2), round(ballVelY, 2)), True, "black")
         text3 = freesansbold.render("BALL OUT: {}".format(isBallOut), True, "black")
         text4 = freesansbold.render("SPEED MODE: {}".format(speedMode), True, "black")
         text5 = freesansbold.render("LOST BALLS: {}".format(lostBalls), True, "black")
+        text6 = freesansbold.render("FPS: {}".format(round(pygame.time.Clock.get_fps(clock), 2)), True, "black")
 
         screen.blit(text, [0, 0])
         screen.blit(text2, [0, 25])
         screen.blit(text3, [0, 50])
         screen.blit(text4, [0, 75])
         screen.blit(text5, [0, 100])
+        screen.blit(text6, [0, 125])
     
     """print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
     print("O: ", checkOffset())
