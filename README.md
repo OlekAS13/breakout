@@ -36,4 +36,4 @@ Breakout is a game in which you need to break all the bricks on the screen to wi
 <br>
 
 ---
-I hope that you will enjoy this game. The game was made in three days. Shoutout to my older Breakout on Scratch. Have Fun!
+I hope that you will enjoy this game. The game was made in three days. Shoutout to my older Breakout and other arcade Games on Scratch. Have Fun!
