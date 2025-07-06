@@ -9,6 +9,7 @@ THROW_BALL_EVENT = pygame.USEREVENT + 1
 TOGGLE_CLICKSTART = pygame.USEREVENT + 2
 BALL_OUT = pygame.USEREVENT + 3
 TOGGLE_POINTS = pygame.USEREVENT + 4
+SOUND_DELAY_WALL = pygame.USEREVENT + 5
 
 screen = pygame.display.set_mode((1920, 1080), vsync = 1)
 clock = pygame.time.Clock()
@@ -85,14 +86,24 @@ smallBat = False
 canBreakBricks = False
 isBallOut = True
 
-ballAngle = random.randint(-135, -45)
+whichAngle = random.randint(0, 1) # losowanie kata pilki
+
+if whichAngle == 0:
+    ballAngle = -135
+
+elif whichAngle == 1:
+    ballAngle = -45
+
+#ballAngle = random.randint(-135, -45)
 
 ballAngleRad = math.radians(ballAngle)
 
 ballVelX = math.cos(ballAngleRad) * ballSpeed
 ballVelY = -math.sin(ballAngleRad) * ballSpeed
 
-
+# ---CZCIONKI---
+atari = pygame.font.Font("atari.ttf", 60) # czcionka atari
+freesansbold = pygame.font.Font("freesansbold.ttf", 30) # czcionka freesansbold
 
 
 # ---STARTOWE---
@@ -104,6 +115,13 @@ startBallVelX = math.cos(ballAngleRad) * startBallSpeed
 startBallVelY = -math.sin(ballAngleRad) * startBallSpeed
 
 
+# ---DZWIEKI---
+batSound = pygame.mixer.Sound("bat.wav") # dzwiek bat
+wallSound = pygame.mixer.Sound("wall.mp3") # dzwiek wall
+yellowBrickSound = pygame.mixer.Sound("brick.mp3") # dzwiek yellowBrick
+greenBrickSound = pygame.mixer.Sound("brick+.wav") # dzwiek greenBrick
+orangeBrickSound = pygame.mixer.Sound("brick++.wav") # dzwiek orangeBrick
+redBrickSound = pygame.mixer.Sound("brick+++.wav") # dzwiek redBrick
 
 
 # roznica pomiedzy srodkiem bat a srodkiem ball
@@ -139,18 +157,25 @@ def startGame():
 
 # wyrzucenie pilki
 def throwBall():
-    global ballSpeed, ballAngle, ballAngleRad, ballVelX, ballVelY, ball, isBallOut, totalBallHits, speedMode
+    global ballSpeed, ballAngle, ballAngleRad, ballVelX, ballVelY, ball, isBallOut, totalBallHits, speedMode, whichAngle
 
     isBallOut = False
     
-    ball = pygame.Rect(960, 540, 13, 10) # rect ball
+    ball = pygame.Rect(random.randint(621, 1300), 540, 13, 10) # rect ball
     
     speedMode = "bat"
     ballSpeed = 4
     totalBallHits = 0
     
+    whichAngle = random.randint(0, 1) # losowanie kata
 
-    ballAngle = random.randint(-135, -45)
+    if whichAngle == 0:
+        ballAngle = -135
+
+    elif whichAngle == 1:
+        ballAngle = -45
+    
+    #ballAngle = random.randint(-135, -45)
 
     ballAngleRad = math.radians(ballAngle)
 
@@ -315,7 +340,7 @@ while running:
             elif pressedKeys[pygame.K_i]:
                 infiniteLives = True
         
-        if pressedKeys[pygame.K_g] and isBallOut == True and gameStarted == 1: # serwowanie ball
+        if pressedKeys[pygame.K_g] or event.type == pygame.MOUSEBUTTONDOWN and isBallOut == True and gameStarted == 1: # serwowanie ball
             pygame.time.set_timer(THROW_BALL_EVENT, random.randint(1000, 3000), loops = 1)
         
 
@@ -333,8 +358,11 @@ while running:
         if event.type == TOGGLE_CLICKSTART:
             clickStartVisible = not clickStartVisible
         
-        if event.type == TOGGLE_POINTS:
+        if event.type == TOGGLE_POINTS and gameStarted == 1:
             pointsVisible = not pointsVisible
+
+        if event.type == SOUND_DELAY_WALL:
+            pygame.mixer.Sound.play(wallSound)
 
 
     # ruch bat
@@ -367,7 +395,6 @@ while running:
 
     # miganie tekstu "CLICK START"
     if clickStartVisible == 1 and gameStarted == 0:
-        freesansbold = pygame.font.Font("freesansbold.ttf", 30)
         clickStartText = freesansbold.render("CLICK START", True, "white")
 
         screen.blit(clickStartText, [1600, 1000])
@@ -394,7 +421,7 @@ while running:
         
         
     # ---WYSWIETLANIE STATYSTYK---
-    atari = pygame.font.Font("atari.ttf", 60)
+
     
     # tekst gracza staky
     playerText = atari.render("I", True, [204, 204, 204])
@@ -448,7 +475,7 @@ while running:
     
     screen.blit(playerText, [590, 24])
     
-    if pointsVisible == 1:
+    if pointsVisible == 1 and gameEnded == 0:
         screen.blit(pointsHundered, [650, 85])
         screen.blit(pointsTen, [710, 85])
         screen.blit(pointsOne, [770, 85])
@@ -456,6 +483,16 @@ while running:
     screen.blit(secPointsHundered, [1045, 85])
     screen.blit(secPointsTen, [1105, 85])
     screen.blit(secPointsOne, [1165, 85])
+
+    if gameStarted == 0:
+        screen.blit(pointsHundered, [650, 85])
+        screen.blit(pointsTen, [710, 85])
+        screen.blit(pointsOne, [770, 85])
+    
+    if gameEnded == 1:
+        screen.blit(pointsHundered, [650, 85])
+        screen.blit(pointsTen, [710, 85])
+        screen.blit(pointsOne, [770, 85])
 
 
     # rysowanie startowej ball
@@ -540,6 +577,9 @@ while running:
     if ball.colliderect(wallRight):
         ballVelX *= -1
         
+        if gameEnded == 0:
+            pygame.mixer.Sound.play(wallSound)
+        
     # odbicie ball od sciany lewej
     if leftWallGlitch == "On":
         if ball.colliderect(wallLeft2):
@@ -548,6 +588,11 @@ while running:
     elif leftWallGlitch == "Off":
         if ball.colliderect(wallLeft):
             ballVelX *= -1
+    
+    # odpalanie dzwieku przy kolizji z wallLeft
+    if ball.colliderect(wallLeft) and gameEnded == 0:
+        pygame.time.set_timer(SOUND_DELAY_WALL, 5, loops = 1)
+        
     
     if canBreakBricks == True:
         # odbicie ball od czerwonej cegly
@@ -572,6 +617,9 @@ while running:
 
                     canBreakBricks = False
                     speedMode = "brick"
+
+                    if gameEnded == 0:
+                        pygame.mixer.Sound.play(redBrickSound)
                     
                     break
         
@@ -598,8 +646,10 @@ while running:
                         
                     canBreakBricks = False
                     speedMode = "brick"
-                    
-                    
+
+                    if gameEnded == 0:
+                        pygame.mixer.Sound.play(orangeBrickSound)
+
                     break
 
         # odbicie ball od zielonej cegly
@@ -613,6 +663,10 @@ while running:
                         points += 3
                         
                     canBreakBricks = False
+
+                    if gameEnded == 0:
+                        pygame.mixer.Sound.play(greenBrickSound)
+
                     break
         
         # odbicie ball od zoltej cegly
@@ -626,6 +680,10 @@ while running:
                         points += 1
                         
                     canBreakBricks = False
+
+                    if gameEnded == 0:
+                        pygame.mixer.Sound.play(yellowBrickSound)
+
                     break
     
     # odbicie ball od endBar (ekran koncowy)
@@ -699,9 +757,11 @@ while running:
         if not redBricks and not orangeBricks and not greenBricks and not yellowBricks and firstScreenCleared == False:
             newListsOfBricks()
             firstScreenCleared = True
-
-
         
+        if gameEnded == 0:
+            pygame.mixer.Sound.play(batSound)
+
+
     # odbicie ball od bat DYNAMIC
     if ball.colliderect(bat) and ballRotationMode == "Dynamic":
         ballAngle = dynamicBallRotationAngle()
@@ -719,6 +779,10 @@ while running:
             ballSpeed = 6
 
         canBreakBricks = True
+
+        if gameEnded == 0:
+            pygame.mixer.Sound.play(batSound)
+
         
         # generacja drugiego ekranu cegiel
         if not redBricks and not orangeBricks and not greenBricks and not yellowBricks and firstScreenCleared == False:
@@ -737,6 +801,9 @@ while running:
         if not redBricks and not orangeBricks and not greenBricks and not yellowBricks and firstScreenCleared == True:
             drawBat = 0
             gameEnded = 1
+    
+    if gameEnded == 1:
+        pointsVisible = 1
         
     
     
