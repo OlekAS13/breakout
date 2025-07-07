@@ -123,6 +123,7 @@ yellowBrickSound = pygame.mixer.Sound("brick.mp3") # dzwiek yellowBrick
 greenBrickSound = pygame.mixer.Sound("brick+.wav") # dzwiek greenBrick
 orangeBrickSound = pygame.mixer.Sound("brick++.wav") # dzwiek orangeBrick
 redBrickSound = pygame.mixer.Sound("brick+++.wav") # dzwiek redBrick
+wallGlitchSound = pygame.mixer.Sound("wallGlitch.wav") # dzwiek lewej sciany z glitchem
 
 
 # roznica pomiedzy srodkiem bat a srodkiem ball
@@ -593,18 +594,24 @@ while running:
     if leftWallGlitch == "On":
         if ball.colliderect(wallLeft2):
             ballVelX *= -1
+
+            wallGlitchSound.stop()
+            wallGlitchSound.play()
     
     elif leftWallGlitch == "Off":
         if ball.colliderect(wallLeft):
             ballVelX *= -1
+            
+            wallSound.stop()
+            wallSound.play()
     
-    # odpalanie dzwieku przy kolizji z wallLeft
+    """# odpalanie dzwieku przy kolizji z wallLeft
     if ball.colliderect(wallLeft) and gameEnded == 0:
         wallSound.stop()
         wallSound.play()
         
         
-        #pygame.time.set_timer(SOUND_DELAY_WALL, 5, loops = 1)
+        #pygame.time.set_timer(SOUND_DELAY_WALL, 5, loops = 1)"""
         
     
     if canBreakBricks == True:
@@ -615,7 +622,7 @@ while running:
                 
                 if ball.colliderect(redBrick):
                     if speedMode == "bat": # zmiana predkosci tylko w wypadku gdy ta jeszcze nie zostala zmieniona
-                        changeSpeed(9)
+                        changeSpeed(8)
                     
                     if sign(ballVelX) != sign(prevBallVelX): # ewentualne zamienienie znaku gdy cos niepoprawnie sie odbije (to jest bug i tylko tak udalo mi sie go wyeliminowac)
                         ballVelX *= -1
@@ -634,6 +641,10 @@ while running:
                     if gameEnded == 0:
                         redBrickSound.stop()
                         redBrickSound.play()
+
+                        orangeBrickSound.stop()
+                        greenBrickSound.stop()
+                        yellowBrickSound.stop()
                     
                     break
         
@@ -645,7 +656,7 @@ while running:
                 
                 if ball.colliderect(orangeBrick):
                     if speedMode == "bat": # zmiana predkosci tylko w wypadku gdy ta jeszcze nie zostala zmieniona
-                        changeSpeed(9)
+                        changeSpeed(8)
                         
                     if sign(ballVelX) != sign(prevBallVelX): # ewentualne zamienienie znaku gdy cos niepoprawnie sie odbije (to jest bug i tylko tak udalo mi sie go wyeliminowac)
                         ballVelX *= -1
@@ -665,6 +676,10 @@ while running:
                         orangeBrickSound.stop()
                         orangeBrickSound.play()
 
+                        redBrickSound.stop()
+                        greenBrickSound.stop()
+                        yellowBrickSound.stop()
+
                     break
 
         # odbicie ball od zielonej cegly
@@ -683,6 +698,10 @@ while running:
                         greenBrickSound.stop()
                         greenBrickSound.play()
 
+                        redBrickSound.stop()
+                        orangeBrickSound.stop()
+                        yellowBrickSound.stop()
+
                     break
         
         # odbicie ball od zoltej cegly
@@ -700,6 +719,10 @@ while running:
                     if gameEnded == 0:
                         yellowBrickSound.stop()
                         yellowBrickSound.play()
+
+                        redBrickSound.stop()
+                        orangeBrickSound.stop()
+                        greenBrickSound.stop()
 
                     break
     
