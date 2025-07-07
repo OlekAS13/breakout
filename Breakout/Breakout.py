@@ -1,7 +1,6 @@
 import pygame
 import random
 import math
-import time
 
 pygame.init()
 
@@ -9,7 +8,7 @@ THROW_BALL_EVENT = pygame.USEREVENT + 1
 TOGGLE_CLICKSTART = pygame.USEREVENT + 2
 BALL_OUT = pygame.USEREVENT + 3
 TOGGLE_POINTS = pygame.USEREVENT + 4
-SOUND_DELAY_WALL = pygame.USEREVENT + 5
+#SOUND_DELAY_WALL = pygame.USEREVENT + 5
 
 screen = pygame.display.set_mode((1920, 1080), vsync = 1)
 clock = pygame.time.Clock()
@@ -365,8 +364,8 @@ while running:
         if event.type == TOGGLE_POINTS and gameStarted == 1:
             pointsVisible = not pointsVisible
 
-        if event.type == SOUND_DELAY_WALL:
-            pygame.mixer.Sound.play(wallSound)
+        """if event.type == SOUND_DELAY_WALL:
+            pygame.mixer.Sound.play(wallSound)"""
 
 
     # ruch bat
@@ -904,4 +903,4 @@ while running:
 
     pygame.display.flip()
 
-    clock.tick(240)
+    clock.tick(0)
