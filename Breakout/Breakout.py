@@ -789,6 +789,9 @@ while running:
 
     # odbicie ball od bat STATIC
     if ball.colliderect(bat) and ballRotationMode == "Static":
+        ballVelX = math.cos(ballAngleRad) * ballSpeed
+        ballVelY = -math.sin(ballAngleRad) * ballSpeed
+
         if checkOffset() > 0 and ballVelX < 0 and ballVelY > 0: # ball leci z prawej w dol, uderza bat od prawej strony
             ballVelX *= -1
             ballVelY *= -1
@@ -808,11 +811,18 @@ while running:
         if not redBricks and not orangeBricks and not greenBricks and not yellowBricks and firstScreenCleared == False:
             newListsOfBricks()
             firstScreenCleared = True
-        
+
+        totalBallHits += 1
+
+        if totalBallHits == 3 and speedMode == "bat": # zmiana predkosci w zaleznosci od odbic o bat. Predkosc zmienia sie przy kolejnym odbiciu dlatego totalBallHits jest o 1 mniejsze
+            ballSpeed = 5
+
+        elif totalBallHits == 11 and speedMode == "bat":
+            ballSpeed = 6
+
         if gameEnded == 0:
             batSound.stop()
             batSound.play()
-
 
     # odbicie ball od bat DYNAMIC
     if ball.colliderect(bat) and ballRotationMode == "Dynamic":
