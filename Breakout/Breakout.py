@@ -435,6 +435,7 @@ while running:
     # tekst gracza staky
     playerText = atari.render("I", True, [204, 204, 204])
     
+    
     # miejsce setne punktow
     if points // 100 == 0:
         pointsHundered = atari.render("O", True, [204, 204, 204])
@@ -444,6 +445,7 @@ while running:
     
     elif points // 100 >= 2:
         pointsHundered = atari.render("{}".format(points // 100), True, [204, 204, 204])
+
     
     # miejsce dziesiate punktow
     if (points // 10) % 10 == 0:
@@ -595,15 +597,17 @@ while running:
         if ball.colliderect(wallLeft2):
             ballVelX *= -1
 
-            wallGlitchSound.stop()
-            wallGlitchSound.play()
+            if gameEnded == 0:
+                wallGlitchSound.stop()
+                wallGlitchSound.play()
     
     elif leftWallGlitch == "Off":
         if ball.colliderect(wallLeft):
             ballVelX *= -1
             
-            wallSound.stop()
-            wallSound.play()
+            if gameEnded == 0:
+                wallSound.stop()
+                wallSound.play()
     
     """# odpalanie dzwieku przy kolizji z wallLeft
     if ball.colliderect(wallLeft) and gameEnded == 0:
