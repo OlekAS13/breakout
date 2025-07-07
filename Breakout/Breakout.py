@@ -103,7 +103,7 @@ ballVelX = math.cos(ballAngleRad) * ballSpeed
 ballVelY = -math.sin(ballAngleRad) * ballSpeed
 
 # ---CZCIONKI---
-atari = pygame.font.Font("atari.ttf", 60) # czcionka atari
+atari = pygame.font.Font("atari.otf", 60) # czcionka atari
 freesansbold = pygame.font.Font("freesansbold.ttf", 30) # czcionka freesansbold
 
 
@@ -437,51 +437,59 @@ while running:
     
     
     # miejsce setne punktow
-    if points // 100 == 0:
+    pointsHundered = atari.render("{}".format(points // 100), True, [204, 204, 204])
+
+    """if points // 100 == 0:
         pointsHundered = atari.render("O", True, [204, 204, 204])
     
     elif points // 100 == 1:
         pointsHundered = atari.render("I", True, [204, 204, 204])
     
     elif points // 100 >= 2:
-        pointsHundered = atari.render("{}".format(points // 100), True, [204, 204, 204])
+        pointsHundered = atari.render("{}".format(points // 100), True, [204, 204, 204])"""
 
     
     # miejsce dziesiate punktow
-    if (points // 10) % 10 == 0:
+    pointsTen = atari.render("{}".format((points // 10) % 10), True, [204, 204, 204])
+
+    """if (points // 10) % 10 == 0:
         pointsTen = atari.render("O", True, [204, 204, 204])
         
     elif (points // 10) % 10 == 1:
         pointsTen = atari.render("I", True, [204, 204, 204])
     
     elif (points // 10) % 10 >= 2:
-        pointsTen = atari.render("{}".format((points // 10) % 10), True, [204, 204, 204])
+        pointsTen = atari.render("{}".format((points // 10) % 10), True, [204, 204, 204])"""
     
     # miejsce jednosci punktow
-    if points % 10 == 0:
+    pointsOne = atari.render("{}".format(points % 10), True, [204, 204, 204])
+
+    """if points % 10 == 0:
         pointsOne = atari.render("O", True, [204, 204, 204])
     
     elif points % 10 == 1:
         pointsOne = atari.render("I", True, [204, 204, 204])
         
     elif points % 10 >= 2:
-        pointsOne = atari.render("{}".format(points % 10), True, [204, 204, 204])
+        pointsOne = atari.render("{}".format(points % 10), True, [204, 204, 204])"""
         
     
     # tekst ilosci straconych pilek
-    if lostBalls == 0:
+    lostBallsText = atari.render("{}".format(lostBalls), True, [204, 204, 204])
+
+    """if lostBalls == 0:
         lostBallsText = atari.render("O", True, [204, 204, 204])
         
     elif lostBalls == 1:
         lostBallsText = atari.render("I", True, [204, 204, 204])
         
     elif lostBalls >= 2:
-        lostBallsText = atari.render("{}".format(lostBalls), True, [204, 204, 204])
+        lostBallsText = atari.render("{}".format(lostBalls), True, [204, 204, 204])"""
     
     # punkty drugiego gracza stale
-    secPointsHundered = atari.render("O", True, [204, 204, 204])
-    secPointsTen = atari.render("O", True, [204, 204, 204])
-    secPointsOne = atari.render("O", True, [204, 204, 204])
+    secPointsHundered = atari.render("0", True, [204, 204, 204])
+    secPointsTen = atari.render("0", True, [204, 204, 204])
+    secPointsOne = atari.render("0", True, [204, 204, 204])
     
     
     screen.blit(playerText, [590, 24])
