@@ -913,4 +913,4 @@ while running:
 
     pygame.display.flip()
 
-    clock.tick(0)
+    clock.tick(240)
