@@ -616,6 +616,51 @@ while running:
                 wallSound.stop()
                 wallSound.play()
     
+    # odbijanie ball od cegiel
+    if canBreakBricks == True:
+        allBrickRows = [
+            (redBricks, 7, redBrickSound),
+            (orangeBricks, 5, orangeBrickSound),
+            (greenBricks, 3, greenBrickSound),
+            (yellowBricks, 1, yellowBrickSound)
+        ]
+
+        for brickList, pointValue, sound in allBrickRows:
+            for idx, brick in enumerate(brickList):
+                prevBallVelX = ballVelX
+                prevBallVelY = ballVelY
+
+                if ball.colliderect(brick):
+                    if pointValue >= 5 and speedMode == "bat":
+                        changeSpeed(8)
+
+                    if sign(ballVelX) != sign(prevBallVelX):
+                        ballVelX *= -1
+
+                    if sign(ballVelY) == sign(prevBallVelY):
+                        ballVelY *= -1
+
+                    if gameEnded == 0:
+                        del brickList[idx]
+                        points += pointValue
+
+                    canBreakBricks = False
+                    if pointValue >= 5:
+                        speedMode = "brick"
+
+                    if gameStarted == 1 and gameEnded == 0:
+                        sound.stop()
+
+                        redBrickSound.stop()
+                        orangeBrickSound.stop()
+                        greenBrickSound.stop()
+                        yellowBrickSound.stop()
+
+                        sound.play()
+                    break
+            if not canBreakBricks:
+                break
+    
     """# odpalanie dzwieku przy kolizji z wallLeft
     if ball.colliderect(wallLeft) and gameEnded == 0:
         wallSound.stop()
@@ -625,7 +670,8 @@ while running:
         #pygame.time.set_timer(SOUND_DELAY_WALL, 5, loops = 1)"""
         
     
-    if canBreakBricks == True:
+    
+    """if canBreakBricks == True:
         # odbicie ball od czerwonej cegly
         for idx, redBrick in enumerate(redBricks):
                 prevBallVelX = ballVelX
@@ -735,7 +781,7 @@ while running:
                         orangeBrickSound.stop()
                         greenBrickSound.stop()
 
-                    break
+                    break"""
     
     # odbicie ball od endBar (ekran koncowy)
     if ball.colliderect(endBar) and gameEnded == 1:
@@ -913,4 +959,4 @@ while running:
 
     pygame.display.flip()
 
-    clock.tick(240)
+    clock.tick(0)
