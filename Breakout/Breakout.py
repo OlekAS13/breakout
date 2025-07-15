@@ -20,7 +20,7 @@ pygame.display.toggle_fullscreen()
 
 gameStarted = 0
 gameEnded = 0
-drawBat = 0
+drawPaddle = 0
 debug = 0
 clickStartVisible = 1
 freePlayVisible = 0
@@ -39,14 +39,14 @@ ballRotationMode = "Dynamic"
 leftWallGlitch = "On"
 
 # elementy gry
-bat = pygame.Rect(960, 1014, 45, 17) # rect bat
+paddle = pygame.Rect(960, 1014, 45, 17) # rect paddle
 ball = pygame.Rect(960, 540, 13, 10) # rect ball
 wallTop = pygame.Rect(588, 0, 745, 35) # rect wallTop
 wall = pygame.image.load("wall.png").convert_alpha() # image wallLeft i wallRight
 bar = pygame.Rect(585, 1014, 750, 17) # rect bar
 wallBottom = pygame.Rect(0, 1070, 1920, 10)
 wallLeft2 = pygame.Rect(558, 0, 15, 1080) # dodatkowa czarna lewa sciana za widoczna lewa sciana aby wystepowal Wall Glitch
-shortBat = pygame.Rect(982, 1014, 25, 17) # rect shortBat
+shortPaddle = pygame.Rect(982, 1014, 25, 17) # rect shortPaddle
 endBar = pygame.Rect(585, 1014, 750, 17) # rect endBar (bar na ekran koncowy)
 
 
@@ -75,12 +75,12 @@ yellowBrickPosX = 588
 yellowBrickPosY = 283
 
 # zmienne predkosci ball
-speedMode = "bat"
+speedMode = "paddle"
 ballSpeed = 4
 
-# zmienne bat
+# zmienne paddle
 totalBallHits = 0
-smallBat = False
+isPaddleShort = False
 
 # cechy ball
 canBreakBricks = False
@@ -116,7 +116,7 @@ startBallVelY = -math.sin(ballAngleRad) * startBallSpeed
 
 
 # ---DZWIEKI---
-batSound = pygame.mixer.Sound("bat.wav") # dzwiek bat
+paddleSound = pygame.mixer.Sound("paddle.wav") # dzwiek paddle
 wallSound = pygame.mixer.Sound("wall.mp3") # dzwiek wall
 yellowBrickSound = pygame.mixer.Sound("brick.mp3") # dzwiek yellowBrick
 greenBrickSound = pygame.mixer.Sound("brick+.wav") # dzwiek greenBrick
@@ -125,14 +125,14 @@ redBrickSound = pygame.mixer.Sound("brick+++.wav") # dzwiek redBrick
 wallGlitchSound = pygame.mixer.Sound("wallGlitch.wav") # dzwiek lewej sciany z glitchem
 
 
-# roznica pomiedzy srodkiem bat a srodkiem ball
+# roznica pomiedzy srodkiem paddle a srodkiem ball
 def checkOffset():
-    offset = ball.centerx - bat.centerx
+    offset = ball.centerx - paddle.centerx
     
     return offset
 
 def dynamicBallRotationAngle():
-    maxOffset = bat.width / 2 # max offset czyli polowa dlugosci bat
+    maxOffset = paddle.width / 2 # max offset czyli polowa dlugosci paddle
 
     offset = checkOffset()
     offset = min(offset, maxOffset) # najmniejsza wartosc z offset i maxOffset
@@ -164,7 +164,7 @@ def throwBall():
     
     ball = pygame.Rect(random.randint(621, 1300), 540, 13, 10) # rect ball
     
-    speedMode = "bat"
+    speedMode = "paddle"
     ballSpeed = 4
     totalBallHits = 0
     
@@ -262,10 +262,10 @@ def generateYellowBricks():
 
 # piłka wyleciała
 def ballOut():
-    global isBallOut, smallBat, lostBalls
+    global isBallOut, isPaddleShort, lostBalls
     
     isBallOut = True
-    smallBat = False
+    isPaddleShort = False
     
     if infiniteLives == False:
         lostBalls +=1
@@ -348,7 +348,7 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN and gameStarted == 0: # nacisniecie myszy spowoduje start
             bar.update(10000, 10000, 0, 0)
             startBall.update(10000, 10000, 0, 0)
-            drawBat = 1
+            drawPaddle = 1
             clickStartVisible = 0
             freePlayVisible = 0
 
@@ -368,10 +368,10 @@ while running:
             pygame.mixer.Sound.play(wallSound)"""
 
 
-    # ruch bat
+    # ruch paddle
     mouse_x, _ = pygame.mouse.get_pos()
-    bat.centerx = mouse_x
-    shortBat.centerx = mouse_x
+    paddle.centerx = mouse_x
+    shortPaddle.centerx = mouse_x
 
 
 
@@ -570,11 +570,11 @@ while running:
     if gameEnded == 1: # rysowanie bar na ekreanie koncowym
         pygame.draw.rect(screen, [0, 95, 155], endBar) # rysowanie bar
 
-    if drawBat == 1 and smallBat == False and gameEnded == 0:
-        pygame.draw.rect(screen, [0, 95, 155], bat) # rysowanie bat
+    if drawPaddle == 1 and isPaddleShort == False and gameEnded == 0:
+        pygame.draw.rect(screen, [0, 95, 155], paddle) # rysowanie paddle
     
-    elif drawBat == 1 and smallBat == True and gameEnded == 0: # rysowanie shortBat
-        pygame.draw.rect(screen, [0, 95 , 155], shortBat)
+    elif drawPaddle == 1 and isPaddleShort == True and gameEnded == 0: # rysowanie shortPaddle
+        pygame.draw.rect(screen, [0, 95 , 155], shortPaddle)
         
 
     
@@ -589,7 +589,7 @@ while running:
     if ball.colliderect(wallTop):
         ballVelY *= -1
         canBreakBricks = True
-        smallBat = True
+        isPaddleShort = True
 
     # odbicie ball od sciany prawej
     if ball.colliderect(wallRight):
@@ -631,7 +631,7 @@ while running:
                 prevBallVelY = ballVelY
 
                 if ball.colliderect(brick):
-                    if pointValue >= 5 and speedMode == "bat":
+                    if pointValue >= 5 and speedMode == "paddle":
                         changeSpeed(8)
 
                     if sign(ballVelX) != sign(prevBallVelX):
@@ -833,23 +833,23 @@ while running:
 
 
 
-    # odbicie ball od bat STATIC
-    if ball.colliderect(bat) and ballRotationMode == "Static":
+    # odbicie ball od paddle STATIC
+    if ball.colliderect(paddle) and ballRotationMode == "Static":
         ballVelX = math.cos(ballAngleRad) * ballSpeed
         ballVelY = -math.sin(ballAngleRad) * ballSpeed
 
-        if checkOffset() > 0 and ballVelX < 0 and ballVelY > 0: # ball leci z prawej w dol, uderza bat od prawej strony
+        if checkOffset() > 0 and ballVelX < 0 and ballVelY > 0: # ball leci z prawej w dol, uderza paddle od prawej strony
             ballVelX *= -1
             ballVelY *= -1
         
-        elif checkOffset() < 0 and ballVelX < 0 and ballVelY > 0: # ball leci z prawej w dol, udeza bat od lewej strony
+        elif checkOffset() < 0 and ballVelX < 0 and ballVelY > 0: # ball leci z prawej w dol, udeza paddle od lewej strony
             ballVelY *= -1
 
-        elif checkOffset() < 0 and ballVelX > 0 and ballVelY > 0: # ball leci z lewej w dol, udeza bat od lewej strony
+        elif checkOffset() < 0 and ballVelX > 0 and ballVelY > 0: # ball leci z lewej w dol, udeza paddle od lewej strony
             ballVelX *= -1
             ballVelY *= -1
 
-        elif checkOffset() > 0 and ballVelX > 0 and ballVelY > 0: # ball leci z lewej w dol, udeza bat od prawej strony
+        elif checkOffset() > 0 and ballVelX > 0 and ballVelY > 0: # ball leci z lewej w dol, udeza paddle od prawej strony
             ballVelY *= -1
         
         canBreakBricks = True
@@ -860,18 +860,18 @@ while running:
 
         totalBallHits += 1
 
-        if totalBallHits == 3 and speedMode == "bat": # zmiana predkosci w zaleznosci od odbic o bat. Predkosc zmienia sie przy kolejnym odbiciu dlatego totalBallHits jest o 1 mniejsze
+        if totalBallHits == 3 and speedMode == "paddle": # zmiana predkosci w zaleznosci od odbic o paddle. Predkosc zmienia sie przy kolejnym odbiciu dlatego totalBallHits jest o 1 mniejsze
             ballSpeed = 5
 
-        elif totalBallHits == 11 and speedMode == "bat":
+        elif totalBallHits == 11 and speedMode == "paddle":
             ballSpeed = 6
 
         if gameEnded == 0:
-            batSound.stop()
-            batSound.play()
+            paddleSound.stop()
+            paddleSound.play()
 
-    # odbicie ball od bat DYNAMIC
-    if ball.colliderect(bat) and ballRotationMode == "Dynamic":
+    # odbicie ball od paddle DYNAMIC
+    if ball.colliderect(paddle) and ballRotationMode == "Dynamic":
         ballAngle = dynamicBallRotationAngle()
         ballAngleRad = math.radians(ballAngle)
 
@@ -880,17 +880,17 @@ while running:
 
         totalBallHits += 1
         
-        if totalBallHits == 3 and speedMode == "bat": # zmiana predkosci w zaleznosci od odbic o bat. Predkosc zmienia sie przy kolejnym odbiciu dlatego totalBallHits jest o 1 mniejsze
+        if totalBallHits == 3 and speedMode == "paddle": # zmiana predkosci w zaleznosci od odbic o paddle. Predkosc zmienia sie przy kolejnym odbiciu dlatego totalBallHits jest o 1 mniejsze
             ballSpeed = 5
 
-        elif totalBallHits == 11 and speedMode == "bat":
+        elif totalBallHits == 11 and speedMode == "paddle":
             ballSpeed = 6
 
         canBreakBricks = True
 
         if gameEnded == 0:
-            batSound.stop()
-            batSound.play()
+            paddleSound.stop()
+            paddleSound.play()
 
         
         # generacja drugiego ekranu cegiel
@@ -908,7 +908,7 @@ while running:
     # ekran koncowy
     if ball.colliderect(yellowBrick) or ball.colliderect(greenBrick) or ball.colliderect(orangeBrick) or ball.colliderect(redBrick) and gameStarted == 1:
         if not redBricks and not orangeBricks and not greenBricks and not yellowBricks and firstScreenCleared == True:
-            drawBat = 0
+            drawPaddle = 0
             gameEnded = 1
     
     if gameEnded == 1:
