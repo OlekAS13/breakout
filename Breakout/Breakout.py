@@ -28,10 +28,11 @@ space = 0
 firstScreenCleared = False
 infiniteLives = False
 pointsVisible = 1
+settingsTextVisible = True
 
 # statystyki
 points = 0
-lostBalls = 0
+lostBalls = 1
 
 # ustawienia
 settingsOpen = False
@@ -147,9 +148,10 @@ def dynamicBallRotationAngle():
 
 # funkcja startujaca gre
 def startGame():
-    global gameStarted
+    global gameStarted, settingsTextVisible
 
     gameStarted = 1
+    settingsTextVisible = False
     
     pygame.time.set_timer(TOGGLE_POINTS, 125)
 
@@ -285,6 +287,48 @@ def changeSpeed(newSpeed):
 def sign(x):
     return (x > 0) - (x < 0)
 
+def resetGame():
+    global gameStarted, gameEnded, drawPaddle, clickStartVisible, freePlayVisible
+    global points, lostBalls, isBallOut, paddle, shortPaddle, totalBallHits, speedMode
+    global ballSpeed, ballVelX, ballVelY, ballAngle, ballAngleRad
+    global firstScreenCleared, isPaddleShort, canBreakBricks
+
+    gameStarted = 0
+    gameEnded = 0
+    drawPaddle = 0
+    clickStartVisible = 1
+    freePlayVisible = 0
+    points = 0
+    lostBalls = 1
+    isBallOut = True
+    firstScreenCleared = False
+    isPaddleShort = False
+    totalBallHits = 0
+    canBreakBricks = False
+    speedMode = "paddle"
+    ballSpeed = 4
+
+    # reset ball angle i prędkość
+    whichAngle = random.randint(0, 1)
+    if whichAngle == 0:
+        ballAngle = -135
+    else:
+        ballAngle = -45
+
+    ballAngleRad = math.radians(ballAngle)
+    ballVelX = math.cos(ballAngleRad) * ballSpeed
+    ballVelY = -math.sin(ballAngleRad) * ballSpeed
+
+    # reset pozycji paddle
+    paddle.centerx = 960
+    shortPaddle.centerx = 960
+
+    # reset startBall
+    startBall.update(960, 540, 13, 10)
+
+    newListsOfBricks()
+
+
 
     
 pygame.time.set_timer(TOGGLE_CLICKSTART, 2000) # 1 sekundowy timer dla "CLICK START"
@@ -345,7 +389,8 @@ while running:
             pygame.time.set_timer(THROW_BALL_EVENT, random.randint(1000, 3000), loops = 1)
         
 
-        if event.type == pygame.MOUSEBUTTONDOWN and gameStarted == 0: # nacisniecie myszy spowoduje start
+        if event.type == pygame.MOUSEBUTTONDOWN and (gameStarted == 0 or gameEnded == 1):
+            resetGame()
             bar.update(10000, 10000, 0, 0)
             startBall.update(10000, 10000, 0, 0)
             drawPaddle = 1
@@ -357,7 +402,7 @@ while running:
         if event.type == THROW_BALL_EVENT: # timer osiagnal 1 sekunde wiec pilka jest serwowana
             throwBall()
         
-        if event.type == TOGGLE_CLICKSTART:
+        if event.type == TOGGLE_CLICKSTART and settingsTextVisible == True:
             clickStartVisible = not clickStartVisible
             freePlayVisible = not freePlayVisible
         
@@ -397,24 +442,24 @@ while running:
 
 
     # miganie tekstu "CLICK START" i "FREE PLAY"
-    if clickStartVisible == 1 and gameStarted == 0:
+    if clickStartVisible == 1 and (gameStarted == 0 or gameEnded == 1):
         clickStartText = freesansbold.render("CLICK START", True, "white")
 
         screen.blit(clickStartText, [1600, 1000])
     
-    if freePlayVisible == 1 and gameStarted == 0:
+    if freePlayVisible == 1 and (gameStarted == 0 or gameEnded == 1):
         freePlayText = freesansbold.render("FREE PLAY", True, "white")
 
         screen.blit(freePlayText, [1615, 1000])
     
     # tekst ustawien
-    if gameStarted == 0 and settingsOpen == False:
+    if settingsTextVisible == True and settingsOpen == False:
         settingsText = freesansbold.render("SETTINGS", True, "white")
         
         screen.blit(settingsText, [120, 1000])
     
     # tekst otwartych ustawien
-    if gameStarted == 0 and settingsOpen == True:
+    if settingsTextVisible == True and settingsOpen == True:
         openSettingsText1 = freesansbold.render("Ball rotation: {}".format(ballRotationMode), True, "white")
         openSettignsText2 = freesansbold.render("B to toggle", True, "white")
         openSettingsText3 = freesansbold.render("Left wall glitch: {}".format(leftWallGlitch), True, "white")
@@ -902,6 +947,10 @@ while running:
     # przegrana
     if lostBalls == 6 and gameEnded == 0:
         gameEnded = 1
+        clickStartVisible = 1
+        freePlayVisible = 0
+        settingsTextVisible = True
+        
         pygame.time.set_timer(THROW_BALL_EVENT, random.randint(1000, 3000), loops = 1)
     
             
@@ -910,6 +959,9 @@ while running:
         if not redBricks and not orangeBricks and not greenBricks and not yellowBricks and firstScreenCleared == True:
             drawPaddle = 0
             gameEnded = 1
+            clickStartVisible = 1
+            freePlayVisible = 0
+            settingsTextVisible = True
     
     if gameEnded == 1:
         pointsVisible = 1
