@@ -18,6 +18,9 @@ Breakout is a game in which you need to break all the bricks on the screen to wi
 * D - show / hide debug variables
 
 ## Settings
+* Mode - choose if you want to play one-player or two-player mode.
+    * One-player - single player game
+    * Two-player - double player game
 * Balls amount - choose how many balls you want to play with.
     * 5 - you will have five balls
     * 3 - you will have three balls
@@ -29,6 +32,7 @@ Breakout is a game in which you need to break all the bricks on the screen to wi
     * Off - the glitch is off and the ball will reflect instantly when it touches the wall
 
 ## Settings controls
+* P - toggles the Mode setting
 * A - toggles the Balls amount setting
 * B - toggles the Ball rotation mode setting
 * L - toggles the Left wall glitch setting
