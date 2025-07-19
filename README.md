@@ -18,6 +18,9 @@ Breakout is a game in which you need to break all the bricks on the screen to wi
 * D - show / hide debug variables
 
 ## Settings
+* Balls amount - choose how many balls you want to play with.
+    * 5 - you will have five balls
+    * 3 - you will have three balls
 * Ball rotation mode - choose which rotation mode you want to play with.
     * Dynamic - the closer the ball's center is to the center of the paddle the straighter the angle will be
     * Static - if you hit the ball with the same half of the paddle that the ball is coming from it will get reflected back by 180 degrees but if ball hits the other half it will get reflected by 90 degrees
@@ -26,6 +29,7 @@ Breakout is a game in which you need to break all the bricks on the screen to wi
     * Off - the glitch is off and the ball will reflect instantly when it touches the wall
 
 ## Settings controls
+* A - toggles the Balls amount setting
 * B - toggles the Ball rotation mode setting
 * L - toggles the Left wall glitch setting
 * I - gives you infinite lives
