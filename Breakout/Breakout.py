@@ -29,6 +29,7 @@ firstScreenCleared = False
 infiniteLives = False
 pointsVisible = 1
 settingsTextVisible = True
+totalBarHits = 0
 
 # statystyki
 points = 0
@@ -42,7 +43,7 @@ leftWallGlitch = "On"
 # elementy gry
 paddle = pygame.Rect(960, 1014, 45, 17) # rect paddle
 ball = pygame.Rect(960, 540, 13, 10) # rect ball
-wallTop = pygame.Rect(588, 0, 745, 35) # rect wallTop
+wallTop = pygame.Rect(573, 0, 775, 35) # rect wallTop
 wall = pygame.image.load("wall.png").convert_alpha() # image wallLeft i wallRight
 bar = pygame.Rect(585, 1014, 750, 17) # rect bar
 wallBottom = pygame.Rect(0, 1070, 1920, 10)
@@ -160,7 +161,7 @@ def startGame():
 
 # wyrzucenie pilki
 def throwBall():
-    global ballSpeed, ballAngle, ballAngleRad, ballVelX, ballVelY, ball, isBallOut, totalBallHits, speedMode, whichAngle
+    global ballSpeed, ballAngle, ballAngleRad, ballVelX, ballVelY, ball, isBallOut, totalBallHits, speedMode, whichAngle, totalBarHits
 
     isBallOut = False
     
@@ -169,6 +170,7 @@ def throwBall():
     speedMode = "paddle"
     ballSpeed = 4
     totalBallHits = 0
+    totalBarHits = 0
     
     whichAngle = random.randint(0, 1) # losowanie kata
 
@@ -830,7 +832,10 @@ while running:
     
     # odbicie ball od endBar (ekran koncowy)
     if ball.colliderect(endBar) and gameEnded == 1:
-        ballVelX *= -1
+        totalBarHits += 1
+        if totalBarHits >= 4:
+            ballVelX *= -1
+            
         ballVelY *= -1
         
         canBreakBricks = True
@@ -845,7 +850,11 @@ while running:
     # odbicie startowej ball od bar
     if gameStarted == 0:
         if startBall.colliderect(bar):
-            startBallVelX *= -1
+            totalBarHits += 1
+
+            if totalBarHits >= 4:
+                startBallVelX *= -1
+
             startBallVelY *= -1
 
         # odbicie startowej ball od wallTop
