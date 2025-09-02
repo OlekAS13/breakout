@@ -546,6 +546,15 @@ while running:
     paddle.centerx = mouse_x
     shortPaddle.centerx = mouse_x
 
+    # ograniczenie do scian
+    paddle.left = max(paddle.left, 558)
+    paddle.right = min(paddle.right, 1333)
+    shortPaddle.left = max(shortPaddle.left, 570)
+    shortPaddle.right = min(shortPaddle.right, 1333)
+
+    
+    
+
 
 
     # ---RYSOWANIE EKRANU---
@@ -749,6 +758,9 @@ while running:
     
     elif drawPaddle == 1 and isPaddleShort == True and gameEnded == 0: # rysowanie shortPaddle
         pygame.draw.rect(screen, [0, 95 , 155], shortPaddle)
+
+    # paddle hider
+    pygame.draw.rect(screen, "black", (540, 1014, 33, 17))
         
 
     
