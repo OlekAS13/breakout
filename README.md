@@ -19,6 +19,9 @@ Breakout is a game in which you need to break all the bricks on the screen to wi
 * D - show / hide debug variables
 
 ## Settings
+* Static rotations max speed - choose if you want static rotations when the ball hits the orange or red bricks.
+    * On - rotations will be static on max speed
+    * Off - rotations will be dynamic on max speed
 * Mode - choose if you want to play one-player or two-player mode.
     * One-player - single player game
     * Two-player - double player game
@@ -33,6 +36,7 @@ Breakout is a game in which you need to break all the bricks on the screen to wi
     * Off - the glitch is off and the ball will reflect instantly when it touches the wall
 
 ## Settings controls
+* C - toggles the Static rotations max speed setting
 * P - toggles the Mode setting
 * A - toggles the Balls amount setting
 * B - toggles the Ball rotation mode setting
